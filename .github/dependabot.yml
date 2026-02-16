@@ -1,0 +1,24 @@
+# Shared default for configure-dependabot.py and create-github-template.py
+# Edit this file only; both scripts use it when --yml-file is not provided.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 2
+
+    groups:
+      prod-non-urgent:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+
+      dev-non-urgent:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
