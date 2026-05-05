@@ -1,0 +1,137 @@
+---
+description: General coding and AI-collaboration standards for this team. Always apply to every change.
+alwaysApply: true
+---
+
+# Coding & AI Standards
+
+These rules apply to every change in this repo. They exist because the same mistakes have shown up repeatedly. Read once, then internalize. When AI assists with a change, AI must follow these rules — call out exceptions explicitly rather than silently violating them.
+
+## Reliability first
+
+- Prefer minimal, targeted changes over broad refactors. Be SOLID, be DRY — but not at the cost of clarity.
+- Preserve existing runtime behavior unless the task explicitly requires a behavior change.
+- Never remove logging or error handling without replacing it with equivalent or better coverage.
+- If passing tests requires changing the tests, stop and flag it to the dev. Tests encode intent — if intent has changed, that's a discussion, not a one-line edit.
+- Don't add new dependencies unless explicitly listed in the current plan. If a new package seems necessary, stop and notify the dev.
+
+## SOLID, applied
+
+- **Single responsibility.** One module / function / component, one reason to change. A component that fetches, transforms, validates, and renders is doing four jobs and will rot.
+- **Open/closed.** Make extension cheap and modification rare. Prefer composition (props, higher-order functions, passing config in) over editing existing code paths.
+- **Liskov substitution.** A subtype must honor its parent's contract. Silently changing return shape in an override breaks a contract no compiler will catch.
+- **Interface segregation.** Don't force consumers to depend on members they don't use. "Kitchen sink" prop interfaces and grab-bag service classes are a code smell.
+- **Dependency inversion.** Depend on abstractions, not concrete implementations. Pass functions and config in; don't reach for concrete singletons inside leaf modules.
+
+## Clarity over cleverness
+
+- **No nested ternaries. Ever.** They're readable for the author for one minute and unreadable for everyone else forever. Use early returns, `if`/`else`, or extract a small helper.
+- **No tuples returned from functions.** A function that returns `[value, error]` or `[x, y, width, height]` forces every caller to remember positional meaning. Return a named object: `{ value, error }`. Exception: language idioms (`Object.entries`, `Map` iteration) — those are not ours to redesign.
+- **No magic numbers or strings.** `MAX_RETRIES`, `DEFAULT_TIMEOUT_MS`, `PAYMENT_STATUS.SETTLED` carry intent that a literal `3` or `"settled"` doesn't.
+- **Early returns, not pyramids.** Five levels of indentation is hard to scan and easy to break. Flatten with early returns or extract helpers.
+- **One thing per line.** Avoid clever one-liners that pack `map`, `filter`, `reduce`, and a ternary into a single expression. Multi-line is cheap; correctness isn't.
+- **Comments explain *why*, not *what*.** The code already says what. The comment should explain why this looks weird, what edge case it handles, or what to remove if a constraint goes away.
+- **Names reveal intent.** No abbreviations except universal ones. `userCount` over `uc`. `isActive` over `flag`.
+
+## Functions and parameters
+
+- Keep functions small enough that the whole body fits on one screen. If it doesn't, that's a sign there are multiple responsibilities to split.
+- More than 3–4 parameters → take an options object. Positional arguments rot at call sites.
+- Don't mutate parameters. Return new values. Mutating inputs surprises the caller and is a fertile source of bugs.
+- Prefer pure functions where you can — same input, same output, no side effects. Easier to test, easier to reason about, easier for AI to refactor safely.
+- Async style is consistent within a function. Pick `async`/`await` or `.then()` chains and stick with one in a given scope. Mixing them is a readability tax.
+
+## React conventions
+
+- Function components and hooks. Class components are deprecated for this team.
+- Hooks at the top level only. Never inside conditions, loops, or after early returns.
+- Effect dependency arrays must be honest. If you find yourself disabling the lint warning, you usually have a bug — fix the bug, don't silence the rule.
+- Co-locate state. Lift only when actually necessary. Don't pre-emptively put everything in a global store.
+- **Derive, don't duplicate.** State computable from other state isn't state — it's a derivation. Stop storing it.
+- Memoize when measurement says you should, not when you guess. `useMemo` and `useCallback` aren't free, and they add complexity.
+- Inline functions in JSX are fine in 95% of cases. Don't pre-optimize unless you've measured a real re-render problem.
+- Lists need stable, content-derived keys. Index keys are wrong when items can be reordered, filtered, or inserted in the middle.
+- Don't fetch inside components when there's a data layer. Components render; data layers fetch.
+
+## TypeScript
+
+- Avoid `any`. If you must, leave a comment explaining why and what should replace it later.
+- Prefer `unknown` over `any` when the type is genuinely unknown — it forces explicit narrowing at use sites.
+- Don't use type assertions (`as Foo`) to silence the compiler. The compiler is usually right; figure out why it's complaining.
+- Discriminated unions over enums when modeling states with associated data.
+
+## Testing
+
+Our testing philosophy is rigorous isolation backed by mutation testing. The two work together — heavy mocking only stays honest if surviving mutants are the gate.
+
+- **Mock every external dependency.** Network, database, time, randomness, filesystem, and any module that isn't the unit under test. The point is to control the state space around the unit so coverage can be exhaustive.
+- **Iterate through every expected and unexpected state.** Happy path, edge cases, error paths, malformed inputs, timeouts, failure modes from mocked deps. If a state can occur at runtime, it has a test.
+- **Mutation testing is the quality gate.** Run `npm run stryker` (or the project's equivalent) before considering an implementation complete. Surviving mutants mean tests aren't exercising what they claim to. `npm test` passing is necessary but not sufficient.
+- **Use `toEqual`, not matcher wrappers.** Never `toMatchObject`, `toContain`, or partial-match helpers. `toEqual` kills more mutants and catches more bugs.
+- **For mock-heavy tests, assert both return values *and* side effects** — what was called with what arguments, what was saved, what counters incremented. A single assertion isn't enough; the mutation-test budget is too high to leave unverified surface area.
+- **Tests are deterministic.** No reliance on real time, randomness, or live network. Mock those at the boundary; assert the inputs you handed in.
+- **If a test is hard to write, the unit may have too many responsibilities.** Split the unit; don't paper over the design problem with a more elaborate test.
+
+## Plans for AI-assisted work
+
+When AI is asked to plan a change, AI **must** produce a plan in the format below. The dev provides inputs — at minimum the Jira ticket, sometimes a multi-turn conversation refining the approach. AI writes the plan; the dev reviews, edits, and commits.
+
+Plan files live at `docs/plans/YYYY-MM-DD-<slug>.plan.md`. The plan scales with the work — a typo fix gets three lines of frontmatter and a paragraph; a feature gets a real plan with alternatives considered.
+
+The `todos` array isn't decoration. It's a structured handoff: devs and agents read and update it during execution. Statuses are `pending`, `in-progress`, `completed`, `blocked`.
+
+### Plan template
+
+```markdown
+---
+name: <short title — what we're building or fixing>
+overview: >
+  2-4 sentence summary: what's the problem, what's the approach,
+  what's explicitly out of scope. Tight prose, no marketing language.
+todos:
+  - id: <kebab-case slug, unique within plan>
+    content: <one concrete action — small enough to ship, large enough to matter>
+    status: pending  # pending | in-progress | completed | blocked
+  - id: verify
+    content: Run tests, lint, and CI gate before merge
+    status: pending
+---
+
+# [JIRA-ID] Short title
+
+**Ticket:** https://[org].atlassian.net/browse/JIRA-ID
+**Drafted by:** <agent and model — e.g. Claude (Opus 4.7), Cursor (Composer-2)>
+
+## Problem
+1–3 sentences. What's broken or what are we building, and for whom.
+
+## Reproduction (bugs only)
+Minimal repro steps. If the dev couldn't reproduce, say so explicitly.
+
+## Approach
+How we plan to fix it or build it. Reference specific files / functions / modules where useful.
+
+## Alternatives considered
+What else was considered, and why those weren't picked. One line each is fine.
+
+## Blast radius
+What this touches. What could break that isn't obvious from the diff.
+
+## Notes
+Open questions, follow-ups, links to related plans.
+```
+
+## Code reviews as artifacts
+
+When AI does a code review (whole-feature, pre-merge, post-incident), save the output to `docs/code-reviews/`:
+
+- Filename: `YYYY-MM-DD-<subject>-<agent-slug>-review.md`
+- Frontmatter includes `agent` (the tool — Cursor, Claude Code, Cline, etc.) and `model` (the underlying model id)
+- Multiple independent reviews from different agents on the same change is encouraged for high-risk merges; reconcile findings into a remediation plan rather than acting on each separately
+
+## Safety checks before finishing
+
+- Run relevant tests for the touched areas.
+- Run lint on modified files.
+- Manually exercise the happy path and the obvious failure path.
+- Call out risks, assumptions, and unverified paths explicitly in the handoff. "I assumed X" is more useful than silent confidence.
