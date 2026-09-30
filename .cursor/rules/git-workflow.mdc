@@ -1,0 +1,6 @@
+---
+description: Git workflow conventions — branch naming, commit message format, and git safety rules. Read before any git operation (branch creation, staging, committing, pushing).
+alwaysApply: false
+---
+
+@.claude/rules/git-workflow.md

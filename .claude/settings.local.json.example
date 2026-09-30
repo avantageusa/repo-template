@@ -1,0 +1,65 @@
+{
+  "//": "Optional, personal preference — not loaded by Claude Code as-is. To enable, copy the \"hooks\" block below into your own .claude/settings.local.json (gitignored, machine-local). Requires the hook scripts from https://github.com/karanb192/claude-code-hooks copied to ~/.claude/hooks/ (format-code.js, notify-permission.js) plus this repo's notify-permission-pretooluse.js companion — see that file's header comment for why it exists. Delete any block below from your settings.local.json to turn it off again.",
+  "hooks": {
+    "Stop": [
+      {
+        "//": "Plays a sound when Claude Code finishes responding.",
+        "hooks": [
+          { "type": "command", "command": "afplay /System/Library/Sounds/Glass.aiff &" }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "//": "Plays a sound + sends a Slack alert (via notify-permission.js, needs CCH_SLA_WEBHOOK env var) when Claude needs permission. Note: permission_prompt/idle_prompt/elicitation_dialog only fire in the terminal CLI, not the VSCode extension (github.com/anthropics/claude-code issues #31285, #16114) — that's why PreToolUse below covers the VSCode case instead.",
+        "matcher": "permission_prompt",
+        "hooks": [
+          { "type": "command", "command": "afplay /System/Library/Sounds/Sosumi.aiff &" },
+          { "type": "command", "command": "node ~/.claude/hooks/notify-permission.js" }
+        ]
+      },
+      {
+        "//": "Plays a sound + sends a Slack alert when Claude is idle waiting on your input.",
+        "matcher": "idle_prompt",
+        "hooks": [
+          { "type": "command", "command": "afplay /System/Library/Sounds/Pop.aiff &" },
+          { "type": "command", "command": "node ~/.claude/hooks/notify-permission.js" }
+        ]
+      },
+      {
+        "//": "Sends a Slack alert for MCP elicitation dialogs.",
+        "matcher": "elicitation_dialog",
+        "hooks": [
+          { "type": "command", "command": "node ~/.claude/hooks/notify-permission.js" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "//": "Plays a sound + sends a Slack alert when Claude is asking a multiple-choice question or requesting plan approval. The Slack alert is the VSCode-extension workaround for the Notification hook above.",
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          { "type": "command", "command": "afplay /System/Library/Sounds/Sosumi.aiff &" },
+          { "type": "command", "command": "node ~/.claude/hooks/notify-permission-pretooluse.js" }
+        ]
+      },
+      {
+        "//": "Plays a sound + sends a Slack alert before Claude runs a risky Bash command (rm, sudo, git push, --force, etc). This repo's shared .claude/settings.json separately BLOCKS the genuinely dangerous subset of these via block-dangerous-commands.js — this is just an early heads-up for the rest.",
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "cmd=$(jq -r '.tool_input.command // empty'); case \"$cmd\" in *\"rm \"*|*sudo*|*\"git push\"*|*\"reset --hard\"*|*\"git clean\"*|*chmod*|*chown*|*\"mv \"*|*curl*|*wget*|*\"npm install\"*|*\"npm uninstall\"*|*\"yarn add\"*|*\"yarn remove\"*|*--force*) afplay /System/Library/Sounds/Sosumi.aiff & ;; esac; exit 0" },
+          { "type": "command", "command": "node ~/.claude/hooks/notify-permission-pretooluse.js" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "//": "Auto-formats files with prettier (js/jsx/ts/tsx/json/md/yaml/html/css/scss) right after Claude writes or edits them, via format-code.js. The repo's husky pre-commit hook already runs prettier:fix + lint-staged as the enforced gate — this just gives faster feedback while Claude is working.",
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "node ~/.claude/hooks/format-code.js" }
+        ]
+      }
+    ]
+  }
+}
