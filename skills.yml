@@ -1,0 +1,76 @@
+# Community skill registry for @av-neo/av-ai-infra
+# Run /install-skills in Claude Code to fetch all community skills into .claude/skills/
+#
+# Sources:
+#   JuliusBrussee/caveman  — https://github.com/JuliusBrussee/caveman
+#   mattpocock/skills      — https://github.com/mattpocock/skills
+#   obra/superpowers       — https://github.com/obra/superpowers
+#   github/awesome-copilot — https://github.com/github/awesome-copilot
+
+community:
+  # JuliusBrussee/caveman
+  - name: caveman
+    source: https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman/SKILL.md
+
+  - name: caveman-commit
+    source: https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman-commit/SKILL.md
+
+  - name: caveman-compress
+    source: https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman-compress/SKILL.md
+
+  - name: caveman-help
+    source: https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman-help/SKILL.md
+
+  - name: caveman-review
+    source: https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman-review/SKILL.md
+
+  - name: caveman-stats
+    source: https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman-stats/SKILL.md
+
+  - name: cavecrew
+    source: https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/cavecrew/SKILL.md
+
+  # mattpocock/skills
+  - name: grill-me
+    source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grill-me/SKILL.md
+
+  - name: tdd
+    source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/SKILL.md
+    files:
+      - https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/deep-modules.md
+      - https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/interface-design.md
+      - https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/mocking.md
+      - https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/refactoring.md
+      - https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/tests.md
+
+  - name: diagnose
+    source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/diagnose/SKILL.md
+
+  # obra/superpowers
+  - name: systematic-debugging
+    source: https://raw.githubusercontent.com/obra/superpowers/main/skills/systematic-debugging/SKILL.md
+    files:
+      - https://raw.githubusercontent.com/obra/superpowers/main/skills/systematic-debugging/condition-based-waiting.md
+      - https://raw.githubusercontent.com/obra/superpowers/main/skills/systematic-debugging/defense-in-depth.md
+      - https://raw.githubusercontent.com/obra/superpowers/main/skills/systematic-debugging/root-cause-tracing.md
+
+  # github/awesome-copilot
+  - name: documentation-writer
+    source: https://raw.githubusercontent.com/github/awesome-copilot/main/skills/documentation-writer/SKILL.md
+
+org:
+  - name: plan
+  - name: pr-review
+  - name: code-review-save
+  - name: jira-triage
+  - name: deploy-epic
+  - name: deploy-dev-instance
+  - name: figma-preflight-check
+  - name: figma-guided-build
+  - name: figma-code-audit
+  - name: figma-jira-spec
+  - name: announce-pr
+  - name: avantage-jira-reference
+  - name: write-requirements
+  - name: write-defects
+  - name: evaluate-epic
